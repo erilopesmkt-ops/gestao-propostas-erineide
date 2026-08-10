@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gestão de Propostas • Erineide Lopes</title></head>
+<body style="margin:0;font-family:system-ui;background:#f6f3ee;color:#241f1b">
+<div id="boot" style="min-height:100vh;display:grid;place-items:center"><div style="background:white;padding:24px;border-radius:18px;box-shadow:0 8px 26px rgba(52,42,34,.08)"><strong>Gestão de Propostas</strong><div style="margin-top:8px;color:#6f7480">Carregando CRM…</div></div></div>
+<script>
+(async()=>{
+  try{
+    const get=async p=>{const r=await fetch(p,{cache:'no-store'});if(!r.ok)throw new Error('Arquivo não encontrado: '+p);return r.text()};
+    const join=async files=>(await Promise.all(files.map(get))).join('').replace(/\s/g,'');
+    const decode=b64=>new Uint8Array([...atob(b64)].map(c=>c.charCodeAt(0)));
+    const htmlBytes=decode(await join(['.parts/index.00.b64','.parts/index.01.b64','.parts/index.02.b64','.parts/index.03.b64']));
+    let html=new TextDecoder().decode(htmlBytes);
+    const gz=decode(await join(['.parts/app.gz.00.b64','.parts/app.gz.01.b64']));
+    if(!('DecompressionStream' in window)) throw new Error('Atualize seu navegador para abrir o sistema.');
+    const stream=new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'));
+    const app=await new Response(stream).text();
+    const appUrl=URL.createObjectURL(new Blob([app],{type:'text/javascript'}));
+    html=html.replace('<script src="./app.js"></script>',`<script src="${appUrl}"></script>`);
+    document.open();document.write(html);document.close();
+  }catch(e){document.getElementById('boot').innerHTML=`<div style="max-width:560px;background:white;padding:24px;border-radius:18px"><strong>Não foi possível iniciar o CRM.</strong><p>${e.message}</p></div>`}
+})();
+</script>
+</body></html>
