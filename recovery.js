@@ -77,6 +77,46 @@
     sendReset();
   }, true);
 
+  async function detectRecoveryOnLoad() {
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''));
+    const hasRecoverySignal =
+      url.searchParams.has('code') ||
+      url.searchParams.get('type') === 'recovery' ||
+      hash.get('type') === 'recovery' ||
+      hash.has('access_token');
+
+    if (!hasRecoverySignal) return;
+
+    try {
+      const code = url.searchParams.get('code');
+      if (code) {
+        const { error } = await recoveryClient.auth.exchangeCodeForSession(code);
+        if (error) throw error;
+      }
+
+      const accessToken = hash.get('access_token');
+      const refreshToken = hash.get('refresh_token');
+      if (accessToken && refreshToken) {
+        const { error } = await recoveryClient.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+        if (error) throw error;
+      }
+
+      const { data, error } = await recoveryClient.auth.getSession();
+      if (error) throw error;
+      if (!data.session) throw new Error('Link de recuperação inválido ou expirado.');
+
+      setTimeout(changePassword, 250);
+    } catch (error) {
+      showMessage('Não consegui validar o link de recuperação: ' + error.message, true);
+    }
+  }
+
+  detectRecoveryOnLoad();
+
   recoveryClient.auth.onAuthStateChange((event) => {
     if (event === 'PASSWORD_RECOVERY') {
       setTimeout(changePassword, 150);
