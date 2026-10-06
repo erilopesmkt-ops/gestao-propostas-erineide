@@ -6,7 +6,7 @@
     cfg.SUPABASE_URL,
     cfg.SUPABASE_PUBLISHABLE_KEY
   );
-  const redirectUrl = 'https://erilopesmkt-ops.github.io/gestao-propostas-erineide/';
+  const redirectUrl = 'https://erilopesmkt-ops.github.io/gestao-propostas-erineide/reset-password.html';
   let changing = false;
 
   function showMessage(message, isError = false) {
